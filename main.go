@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	grpc "sprint4/grpc"
-	"sprint4/redisConnection"
 	"sprint4/router"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,55 +14,48 @@ type User struct {
 	Email string `json:"email"`
 }
 
-type Join struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 func tokening(c *fiber.Ctx) error {
 	return c.SendString("HI!")
 }
 
 func main() {
 	app := fiber.New(fiber.Config{AppName: "Test App v1.0.1"})
-	var dbConnector = new(redisConnection.DBconnector)
 	go grpc.GRPC()
-	dbConnector.Setting()
 
 	app.Get("/test", router.Login)
 	app.Post("/join", router.Join)
 	app.Get("/token", router.TokenToString)
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!!")
-	})
+	// app.Get("/", func(c *fiber.Ctx) error {
+	// 	return c.SendString("Hello, World!!")
+	// })
 
-	app.Post("/", func(c *fiber.Ctx) error {
-		return c.Send(c.Body())
-	})
+	// app.Post("/", func(c *fiber.Ctx) error {
+	// 	return c.Send(c.Body())
+	// })
 
-	app.Post("/login", func(c *fiber.Ctx) error {
-		user := new(User)
+	// app.Post("/login", func(c *fiber.Ctx) error {
+	// 	user := new(User)
 
-		if err := c.BodyParser(user); err != nil {
-			return err
-		}
-		value, err := dbConnector.GetHash(ctx, user.Email)
-		if err != nil {
-			c.SendString("failed!")
-		}
-		return c.SendString(value)
-	})
+	// 	if err := c.BodyParser(user); err != nil {
+	// 		return err
+	// 	}
+	// 	value, err := dbConnector.GetHash(ctx, user.Email)
+	// 	if err != nil {
+	// 		c.SendString("failed!")
+	// 	}
+	// 	return c.SendString(value)
+	// })
 
-	app.Post("/join", func(c *fiber.Ctx) error {
-		join := new(Join)
+	// app.Post("/join", func(c *fiber.Ctx) error {
+	// 	join := new(Join)
 
-		if err := c.BodyParser(join); err != nil {
-			return err
-		}
-		dbConnector.SetHash(ctx, join.Email, join.Password)
-		return c.SendString("Success!")
-	})
+	// 	if err := c.BodyParser(join); err != nil {
+	// 		return err
+	// 	}
+	// 	dbConnector.SetHash(ctx, join.Email, join.Password)
+	// 	return c.SendString("Success!")
+	// })
 
 	app.Listen(":3000")
 }

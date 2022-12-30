@@ -2,8 +2,8 @@ package redisConnection
 
 import (
 	"context"
-	// "fmt"
 	"errors"
+	"fmt"
 
 	"github.com/go-redis/redis/v9"
 )
@@ -12,7 +12,12 @@ type DBconnector struct {
 	rdb redis.Client
 }
 
-func (m *DBconnector) Setting() {
+type DBResult struct {
+	Id   int32
+	Name string
+}
+
+func (m *DBconnector) init() {
 	m.rdb = *redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
@@ -20,16 +25,25 @@ func (m *DBconnector) Setting() {
 	})
 }
 
-func (m DBconnector) SetHash(ctx context.Context, key string, value string) {
-	m.rdb.HSet(ctx, "email", key, value).Result()
+func (m DBconnector) SetHash(ctx context.Context, key string, name string, id int32) {
+	m.rdb.HSet(ctx, key, "id", id, "name", name).Result()
 }
 
-func (m DBconnector) GetHash(ctx context.Context, key string) (string, error) {
-	value, err := m.rdb.HGet(ctx, "email", key).Result()
+func (m DBconnector) GetHash(ctx context.Context, key string) (*DBResult, error) {
+	id, err := m.rdb.HGet(ctx, "id", key).Result()
 	if err != nil {
-		return "", errors.New("no value")
+		return nil, errors.New("no value")
 	}
-	return value, nil
+	name, err := m.rdb.HGet(ctx, "name", key).Result()
+	if err != nil {
+		return nil, errors.New("no value")
+	}
+	var parseId int32
+	fmt.Sscan(id, &parseId)
+	return &DBResult{
+		Id:   parseId,
+		Name: name,
+	}, nil
 }
 
 // func ExampleClient() {

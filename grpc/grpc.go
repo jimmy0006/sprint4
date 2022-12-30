@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	pb "sprint4/grpc/user"
+	tokenizer "sprint4/token"
 
 	"sprint4/redisConnection"
 
@@ -17,12 +18,23 @@ type server struct {
 
 func (s *server) Get(ctx context.Context, in *pb.Token) (*pb.User, error) {
 	log.Printf("Received Token: %v", in.GetToken())
-	var dbConnector = new(redisConnection.DBconnector)
+	tokenStruct, err := tokenizer.ExtractTokenEmail(in.GetToken())
 	temp := &pb.User{}
-	dbConnector.GetHash(ctx, "temp")
-	temp.Id = 10
-	temp.Email = "asdfasdf"
-	temp.Name = "HI!"
+	if err != nil {
+		temp.Id = 0
+		temp.Email = ""
+		temp.Name = ""
+		return temp, nil
+	}
+	email := tokenStruct.Email
+	var dbConnector = new(redisConnection.DBconnector)
+	getResult, err := dbConnector.GetHash(ctx, "temp")
+	if err != nil {
+		return nil, err
+	}
+	temp.Id = getResult.Id
+	temp.Email = email
+	temp.Name = getResult.Name
 	return temp, nil
 }
 

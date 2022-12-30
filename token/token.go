@@ -16,6 +16,10 @@ func init() {
 	fmt.Println("init function!")
 }
 
+type AccessDetails struct {
+	Email string
+}
+
 func CreateToken(email string) (string, error) {
 	var err error
 	atClaims := jwt.MapClaims{}
@@ -42,4 +46,22 @@ func VerifyToken(tokenString string) (*jwt.Token, error) {
 		return nil, err
 	}
 	return token, nil
+}
+
+func ExtractTokenEmail(tokenString string) (*AccessDetails, error) {
+	token, err := VerifyToken(tokenString)
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		email, ok := claims["email"].(string)
+		if !ok {
+			return nil, err
+		}
+		return &AccessDetails{
+			Email: email,
+		}, nil
+	}
+	return nil, err
 }
