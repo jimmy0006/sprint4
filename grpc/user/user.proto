@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package user;
+
+option go_package="user/user";
+
+service UserStore{
+    rpc Get (Token) returns (User);
+}
+
+message User{
+    int32 id=1;
+    string email=2;
+    string name=3;
+}
+
+message Token{
+    string token=1;
+}

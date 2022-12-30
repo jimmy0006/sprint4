@@ -1,33 +1,39 @@
-package main
+package grpc
 
 import (
-	"flag"
-	"fmt"
+	"context"
 	"log"
 	"net"
+	pb "sprint4/grpc/user"
+
+	"sprint4/redisConnection"
 
 	"google.golang.org/grpc"
-
-	pb "google.golang.org/grpc/examples/helloworld/helloworld"
-)
-
-var (
-	port = flag.Int("port", 50051, "The server port")
 )
 
 type server struct {
-	pb.UnimplementedGreeterServer
+	pb.UnimplementedUserStoreServer
 }
 
-func main() {
-	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+func (s *server) Get(ctx context.Context, in *pb.Token) (*pb.User, error) {
+	log.Printf("Received Token: %v", in.GetToken())
+	var dbConnector = new(redisConnection.DBconnector)
+	temp := &pb.User{}
+	dbConnector.GetHash(ctx, "temp")
+	temp.Id = 10
+	temp.Email = "asdfasdf"
+	temp.Name = "HI!"
+	return temp, nil
+}
+
+func GRPC() {
+	lis, err := net.Listen("tcp", ":8081")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+
 	s := grpc.NewServer()
-	pb.RegisterGreeterServer(s, &server{})
-	log.Printf("server listening at %v", lis.Addr())
+	pb.RegisterUserStoreServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
