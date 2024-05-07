@@ -2,7 +2,7 @@ module sprint4
 
 go 1.19
 
-require github.com/gofiber/fiber/v2 v2.40.1
+require github.com/gofiber/fiber/v2 v2.43.0
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
